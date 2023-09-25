@@ -7,6 +7,7 @@ apt -y install efibootmgr
 WORKDIR="/boot/autodestroy"
 mkdir $WORKDIR
 rm -rf $WORKDIR/*
+cp -rf assets $WORKDIR/
 cd $WORKDIR
 
 # EXTRACT THE INITIAL RAMDISK
@@ -30,6 +31,12 @@ read -n 1 -s
 
 
 # MODIFY THE RAMDISK 
+
+# modify plymouth theme
+for f in $(ls usr/share/plymouth/themes/*/logo.png)
+do
+	cp -f assets/plymouth/themes/skull/logo.png $f
+done
 
 # copy the executables and their deps over to the initramfs
 cp -f $(which dd) usr/bin/
@@ -74,14 +81,13 @@ echo 'sgdisk -Z $rootfs' >> $DESTROY_BIN
 echo 'wipefs -af $rootfs' >> $DESTROY_BIN
 echo 'echo Erasing drive... please wait...' >> $DESTROY_BIN
 echo 'dd if=/dev/zero of=$(echo $rootfs|rev|cut -b2-|rev) bs=4M status=progress' >> $DESTROY_BIN
-echo 'echo DESTROYED. Please reboot.' >> $DESTROY_BIN
+echo 'reboot' >> $DESTROY_BIN
 echo 'reboot' >> $DESTROY_BIN
 chmod +x $DESTROY_BIN
 
 # patch the init script
 sed -i -r 's/(^# Mount cleanup$)/exec \/bin\/destroy.sh\n\1/' ./init
 # sed -i -r 's/(^# Mount cleanup$)/exec \/usr\/bin\/sh\n\1/' ./init
-
 
 # build the initramfs cpio archive
 find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/destroy.cpio.gz
@@ -98,7 +104,7 @@ echo "        insmod gzio" >> $GRUB_CUSTOM
 echo "        insmod part_gpt" >> $GRUB_CUSTOM
 echo "        insmod ext2" >> $GRUB_CUSTOM
 echo "        search --no-floppy --fs-uuid --set=root $ROOT_UUID" >> $GRUB_CUSTOM
-echo "        linux /boot/vmlinuz root=UUID=$ROOT_UUID ro" >> $GRUB_CUSTOM
+echo "        linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash" >> $GRUB_CUSTOM
 echo "        initrd /boot/destroy.cpio.gz" >> $GRUB_CUSTOM
 echo "}" >> $GRUB_CUSTOM
 
