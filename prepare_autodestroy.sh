@@ -81,8 +81,7 @@ echo 'sgdisk -Z $rootfs' >> $DESTROY_BIN
 echo 'wipefs -af $rootfs' >> $DESTROY_BIN
 echo 'echo Erasing drive... please wait...' >> $DESTROY_BIN
 echo 'dd if=/dev/zero of=$(echo $rootfs|rev|cut -b2-|rev) bs=4M status=progress' >> $DESTROY_BIN
-echo 'reboot' >> $DESTROY_BIN
-echo 'reboot' >> $DESTROY_BIN
+echo 'reboot -f' >> $DESTROY_BIN
 chmod +x $DESTROY_BIN
 
 # patch the init script
