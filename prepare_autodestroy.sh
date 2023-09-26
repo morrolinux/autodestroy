@@ -11,19 +11,46 @@ cp -rf assets $WORKDIR/
 cd $WORKDIR
 
 # EXTRACT THE INITIAL RAMDISK
+INITRD="/boot/initrd.img"
 rm ./init
-echo "EXTRACTING /boot/initrd.img"
-cpio_blocks=$(dd if=/boot/initrd.img skip=0 | cpio -it 2>&1 1>/dev/null | cut -d' ' -f1)
+echo "EXTRACTING $INITRD"
 
-dd if=/boot/initrd.img skip=0 | cpio -di 2>/dev/null
-echo "1st chunk extracted:"
-ls -l
+get_cpio_blocks() {
+	dd if=$INITRD skip=$1 | cpio -it 2>&1 1>/dev/null | cut -d' ' -f1
+}
 
-chunk_2_type=$(dd if=/boot/initrd.img skip=$cpio_blocks | file - | cut -d' ' -f2)
-echo "chunk 2 type is: $chunk_2_type"
+get_stream_type() {
+	dd if=$INITRD skip=$1 | file - | cut -d' ' -f2
+}
 
-dd if=/boot/initrd.img skip=$cpio_blocks 2>/dev/null | zstdcat 2>/dev/null | cpio -di 2>/dev/null
-echo "2nd chunk extracted:"
+# extract multi part cpio archive
+current_offset=0
+chunk_num=0
+while true
+do
+	chunk_num=$(( chunk_num + 1))
+	current_chunk_type=$(get_stream_type $current_offset)
+	echo "chunk #$chunk_num TYPE: $current_chunk_type OFFSET: $current_offset"
+
+	if [[ $current_chunk_type == "ASCII" ]]
+	then
+		# extract
+		dd if=$INITRD skip=$current_offset 2>/dev/null | cpio -di &>/dev/null
+		# advance offset
+		current_offset=$(( $current_offset + $(get_cpio_blocks $current_offset) ))
+	elif [[ $current_chunk_type == "Zstandard" ]]
+	then
+        	dd if=$INITRD skip=$current_offset 2>/dev/null | zstdcat | cpio -di &>/dev/null
+		break
+	elif [[ $current_chunk_type == "LZ4" ]]
+	then
+        	dd if=$INITRD skip=$current_offset 2>/dev/null | lz4cat | cpio -di &>/dev/null
+		break
+	fi
+done
+
+echo "extraction complete."
+
 ls -l
 
 echo "PLEASE confirm everything is alright and press ENTER to continue, or CTRL-c to abort."
