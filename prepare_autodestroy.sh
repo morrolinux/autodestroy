@@ -46,6 +46,9 @@ do
 	then
         	dd if=$INITRD skip=$current_offset 2>/dev/null | lz4cat | cpio -di &>/dev/null
 		break
+	else
+		echo "please configure an extraction method for this format: $current_chunk_type"
+		break
 	fi
 done
 
