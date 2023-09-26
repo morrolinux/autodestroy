@@ -62,12 +62,6 @@ read -n 1 -s
 
 # MODIFY THE RAMDISK 
 
-# modify plymouth theme
-for f in $(ls usr/share/plymouth/themes/*/logo.png)
-do
-	cp -f assets/plymouth/themes/skull/logo.png $f
-done
-
 # copy the executables and their deps over to the initramfs
 cp -f $(which dd) usr/bin/
 for file in $(ldd usr/bin/dd | cut -d' ' -f3 | grep -vE ^$)
@@ -99,6 +93,22 @@ do
 	cp $file lib/x86_64-linux-gnu/
 done
 
+# detect plymouth theme 
+plymouth_theme=$(readlink -f /usr/share/plymouth/themes/default.plymouth|rev|cut -d/ -f1|rev)
+
+# modify plymouth theme (distro-specific) - add yours below in a separate if clause.
+if [[ $plymouth_theme == "rhino-spinner" ]]
+then
+	cp -f assets/plymouth/themes/skull/logo.png usr/share/plymouth/themes/$plymouth_theme/logo.png
+else
+# modify plymouth theme (generic, universal)
+	for f in $(ls usr/share/plymouth/themes/*/*.png)
+	do
+		cp -f assets/plymouth/themes/skull/logo.png $f
+	done
+fi
+
+
 DESTROY_BIN="bin/destroy.sh"
 echo '#!/bin/sh' > $DESTROY_BIN
 echo 'mount -t efivarfs efivarfs /sys/firmware/efi/efivars'  >> $DESTROY_BIN
@@ -119,6 +129,7 @@ sed -i -r 's/(^# Mount cleanup$)/exec \/bin\/destroy.sh\n\1/' ./init
 # sed -i -r 's/(^# Mount cleanup$)/exec \/usr\/bin\/sh\n\1/' ./init
 
 # build the initramfs cpio archive
+echo "creating initramfs cpio archive..."
 find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/destroy.cpio.gz
 
 # ADD A CUSTOM GRUB ENTRY
