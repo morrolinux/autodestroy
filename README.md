@@ -1,6 +1,6 @@
 # DANGER ZONE: FULL DISK WIPE
 
-<img src="assets/github-demo-autodestroy.gif" width="100%" height="100%"> 
+<img src="pics/github-demo-autodestroy.gif" width="100%" height="100%"> 
 
 This simple bash script will program the "autodestroy button" on your PC. 
 Edit the script to add a custom username and password protection and make sure everything goes as it should.
