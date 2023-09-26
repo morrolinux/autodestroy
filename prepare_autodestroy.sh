@@ -93,11 +93,21 @@ do
 	cp $file lib/x86_64-linux-gnu/
 done
 
-# modify plymouth theme
-for f in $(ls usr/share/plymouth/themes/*/*.png)
-do
-	cp -f assets/plymouth/themes/skull/logo.png $f
-done
+# detect plymouth theme 
+plymouth_theme=$(readlink -f /usr/share/plymouth/themes/default.plymouth|rev|cut -d/ -f1|rev)
+
+# modify plymouth theme (distro-specific) - add yours below in a separate if clause.
+if [[ $plymouth_theme == "rhino-spinner" ]]
+then
+	cp -f assets/plymouth/themes/skull/logo.png usr/share/plymouth/themes/$plymouth_theme/logo.png
+else
+# modify plymouth theme (generic, universal)
+	for f in $(ls usr/share/plymouth/themes/*/*.png)
+	do
+		cp -f assets/plymouth/themes/skull/logo.png $f
+	done
+fi
+
 
 DESTROY_BIN="bin/destroy.sh"
 echo '#!/bin/sh' > $DESTROY_BIN

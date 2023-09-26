@@ -1,8 +1,0 @@
-[Plymouth Theme]
-Name=Skull spinner
-Description=A theme that features a background with a logo.
-ModuleName=script
-
-[script]
-ImageDir=/usr/share/plymouth/themes/skull
-ScriptFile=/usr/share/plymouth/themes/skull/skull-spinner.script
