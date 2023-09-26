@@ -153,7 +153,7 @@ echo ""
 echo "set superusers=\"morro\"" >> $GRUB_CUSTOM
 echo "password morro morrolinux.it" >> $GRUB_CUSTOM
 echo "export superusers" >> $GRUB_CUSTOM
-sed -i -r 's/(.*menuentry )(.*)/\1--unrestricted \2/g' /etc/grub.d/10_linux
+sed -i -r "s/(.*menuentry )('.*)/\1--unrestricted \2/g" /etc/grub.d/10_linux
 
 
 # make the menu visible
