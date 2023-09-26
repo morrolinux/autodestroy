@@ -62,11 +62,10 @@ read -n 1 -s
 
 # MODIFY THE RAMDISK 
 
-# modify plymouth theme
-for f in $(ls usr/share/plymouth/themes/*/logo.png)
-do
-	cp -f assets/plymouth/themes/skull/logo.png $f
-done
+# install plymouth theme
+cp -rf assets/plymouth/themes/* usr/share/plymouth/themes/
+rm -f usr/share/plymouth/themes/default.plymouth
+ln -s /usr/share/plymouth/themes/skull/skull-spinner.plymouth usr/share/plymouth/themes/default.plymouth
 
 # copy the executables and their deps over to the initramfs
 cp -f $(which dd) usr/bin/
