@@ -100,7 +100,7 @@ do
 done
 
 # detect plymouth theme 
-plymouth_theme=$(readlink -f /usr/share/plymouth/themes/default.plymouth|rev|cut -d/ -f1|rev)
+plymouth_theme=$(readlink -f /usr/share/plymouth/themes/default.plymouth|rev|cut -d/ -f2|rev)
 
 # modify plymouth theme (distro-specific) - add yours below in a separate if clause.
 if [[ $plymouth_theme == "rhino-spinner" ]]
