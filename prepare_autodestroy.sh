@@ -126,7 +126,7 @@ echo 'umount /root' >> $DESTROY_BIN
 echo 'sgdisk -Z $rootfs' >> $DESTROY_BIN
 echo 'wipefs -af $rootfs' >> $DESTROY_BIN
 echo 'echo Erasing drive... please wait...' >> $DESTROY_BIN
-echo 'dd if=/dev/zero of=$(lsblk -ndo pkname $rootfs) bs=4M status=progress' >> $DESTROY_BIN
+echo 'dd if=/dev/zero of=/dev/$(lsblk -ndo pkname $rootfs) bs=4M status=progress' >> $DESTROY_BIN
 echo 'reboot -f' >> $DESTROY_BIN
 chmod +x $DESTROY_BIN
 
