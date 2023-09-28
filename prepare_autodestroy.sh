@@ -63,6 +63,12 @@ read -n 1 -s
 # MODIFY THE RAMDISK 
 
 # copy the executables and their deps over to the initramfs
+cp -f $(which lsblk) usr/bin/
+for file in $(ldd usr/bin/lsblk | cut -d' ' -f3 | grep -vE ^$)
+do
+	cp $file lib/x86_64-linux-gnu/
+done
+
 cp -f $(which dd) usr/bin/
 for file in $(ldd usr/bin/dd | cut -d' ' -f3 | grep -vE ^$)
 do
@@ -120,7 +126,7 @@ echo 'umount /root' >> $DESTROY_BIN
 echo 'sgdisk -Z $rootfs' >> $DESTROY_BIN
 echo 'wipefs -af $rootfs' >> $DESTROY_BIN
 echo 'echo Erasing drive... please wait...' >> $DESTROY_BIN
-echo 'dd if=/dev/zero of=$(echo $rootfs|rev|cut -b2-|rev) bs=4M status=progress' >> $DESTROY_BIN
+echo 'dd if=/dev/zero of=$(lsblk -ndo pkname $rootfs) bs=4M status=progress' >> $DESTROY_BIN
 echo 'reboot -f' >> $DESTROY_BIN
 chmod +x $DESTROY_BIN
 
