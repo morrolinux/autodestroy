@@ -24,33 +24,10 @@ get_stream_type() {
 }
 
 # extract multi part cpio archive
-current_offset=0
-chunk_num=0
-while true
-do
-	chunk_num=$(( chunk_num + 1))
-	current_chunk_type=$(get_stream_type $current_offset)
-	echo "chunk #$chunk_num TYPE: $current_chunk_type OFFSET: $current_offset"
 
-	if [[ $current_chunk_type == "ASCII" ]]
-	then
-		# extract
-		dd if=$INITRD skip=$current_offset 2>/dev/null | cpio -di &>/dev/null
-		# advance offset
-		current_offset=$(( $current_offset + $(get_cpio_blocks $current_offset) ))
-	elif [[ $current_chunk_type == "Zstandard" ]]
-	then
-        	dd if=$INITRD skip=$current_offset 2>/dev/null | zstdcat | cpio -di &>/dev/null
-		break
-	elif [[ $current_chunk_type == "LZ4" ]]
-	then
-        	dd if=$INITRD skip=$current_offset 2>/dev/null | lz4cat | cpio -di &>/dev/null
-		break
-	else
-		echo "please configure an extraction method for this format: $current_chunk_type"
-		break
-	fi
-done
+unmkinitramfs $INITRD .
+rm -rf early*
+mv main/* .
 
 echo "extraction complete."
 
