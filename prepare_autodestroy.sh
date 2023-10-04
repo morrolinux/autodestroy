@@ -24,15 +24,13 @@ get_stream_type() {
 }
 
 # extract multi part cpio archive
-
 unmkinitramfs $INITRD .
 rm -rf early*
 mv main/* .
+rmdir main
 
 echo "extraction complete."
-
 ls -l
-
 echo "PLEASE confirm everything is alright and press ENTER to continue, or CTRL-c to abort."
 read -n 1 -s
 
