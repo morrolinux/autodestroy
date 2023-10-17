@@ -26,7 +26,7 @@ get_stream_type() {
 # extract multi part cpio archive
 unmkinitramfs $INITRD .
 rm -rf early*
-mv main/* .
+mv z/* .
 rmdir main
 
 echo "extraction complete."
@@ -38,41 +38,22 @@ read -n 1 -s
 # MODIFY THE RAMDISK 
 
 # copy the executables and their deps over to the initramfs
-cp -f $(which lsblk) usr/bin/
-for file in $(ldd usr/bin/lsblk | cut -d' ' -f3 | grep -vE ^$)
-do
-	cp $file lib/x86_64-linux-gnu/
+# if other apps are needed, add them to the list
+
+apps=("lsblk" "dd" "sgdisk" "wipefs" "efibootmgr" "rev")
+
+for app in "${apps[@]}"; do
+	app_path="$(which $app)"
+	if [ -f "$app_path" ] && [ -x "$app_path" ]
+	then
+		app_path_cut=$(echo "$app_path" | sed 's/^\///')
+		cp -f "$app_path" "$app_path_cut"
+		for file in $(ldd "$app_path" | cut -d' ' -f3 | grep -vE "^$"); do
+			cp "$file" lib/x86_64-linux-gnu/
+		done
+	fi
 done
 
-cp -f $(which dd) usr/bin/
-for file in $(ldd usr/bin/dd | cut -d' ' -f3 | grep -vE ^$)
-do
-	cp $file lib/x86_64-linux-gnu/
-done
-
-cp $(which sgdisk) bin/
-for file in $(ldd bin/sgdisk | cut -d' ' -f3 | grep -vE ^$)
-do
-	cp $file lib/x86_64-linux-gnu/
-done
-
-cp $(which wipefs) bin/
-for file in $(ldd bin/wipefs | cut -d' ' -f3 | grep -vE ^$)
-do
-	cp $file lib/x86_64-linux-gnu/
-done
-
-cp $(which efibootmgr) bin/
-for file in $(ldd bin/efibootmgr | cut -d' ' -f3 | grep -vE ^$)
-do
-	cp $file lib/x86_64-linux-gnu/
-done
-
-cp $(which rev) bin/
-for file in $(ldd bin/rev | cut -d' ' -f3 | grep -vE ^$)
-do
-	cp $file lib/x86_64-linux-gnu/
-done
 
 # detect plymouth theme 
 plymouth_theme=$(readlink -f /usr/share/plymouth/themes/default.plymouth|rev|cut -d/ -f2|rev)
@@ -145,4 +126,5 @@ sed -i 's/GRUB_TIMEOUT=0/GRUB_TIMEOUT=5/g' /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 
 echo "ALL IS DONE! - Now you can reboot.."
+
 
