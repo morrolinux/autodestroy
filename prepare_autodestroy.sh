@@ -13,8 +13,8 @@ usage() {
 
 
 handle_args(){
-	while getopts "u:p:e:" opt; do
-	case $opt in
+	while getopts ":u:p:e:s:" opt; do
+	case "${opt}" in
 		u)
 		user="$OPTARG"
 		;;
@@ -35,11 +35,9 @@ handle_args(){
 	done
 	if [ -z "$user" ] || [ -z "$password" ]
 	then
-		echo "You must specify the user, password, and the name of the GRUB entry."
+		echo "You must specify the user, password."
 		usage
 	fi
-	echo "User: $user"
-	echo "Password: $password"
 	if [ -n "$entry_name" ]; then
 		echo "GRUB Entry Name: $entry_name"
 	else
@@ -47,7 +45,7 @@ handle_args(){
 	fi
 }
 
-handle_args
+handle_args "$@"
 
 # install required dependencies
 apt -y install gdisk
