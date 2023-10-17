@@ -73,7 +73,7 @@ get_stream_type() {
 # extract multi part cpio archive
 unmkinitramfs $INITRD .
 rm -rf early*
-mv z/* .
+mv main/* .
 rmdir main
 
 echo "extraction complete."
@@ -178,5 +178,3 @@ sed -i 's/GRUB_TIMEOUT=0/GRUB_TIMEOUT=5/g' /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 
 echo "ALL IS DONE! - Now you can reboot.."
-
-
