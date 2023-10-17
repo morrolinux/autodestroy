@@ -1,5 +1,50 @@
 #!/bin/bash
 
+# Variables for grub
+user=""
+password=""
+entry_name=""
+
+usage() {
+  echo "usage: $0 -u <user> -p <password> [-e <grub entry name>]"
+  exit 1
+}
+
+
+handle_args(){
+	while getopts "u:p:e:" opt; do
+	case $opt in
+		u)
+		user="$OPTARG"
+		;;
+		p)
+		password="$OPTARG"
+		;;
+		e)
+		entry_name="$OPTARG"
+		;;
+		\?)
+		echo "Unrecognized option: -$OPTARG"
+		usage
+		;;
+	esac
+	done
+	if [ -z "$user" ] || [ -z "$password" ]
+	then
+		echo "You must specify the user, password, and the name of the GRUB entry."
+		usage
+	fi
+	echo "User: $user"
+	echo "Password: $password"
+	if [ -n "$entry_name" ]; then
+		echo "GRUB Entry Name: $entry_name"
+	else
+		entry_name="Destroy"
+	fi
+}
+
+handle_args
+
 # install required dependencies
 apt -y install gdisk
 apt -y install efibootmgr
@@ -99,7 +144,7 @@ GRUB_CUSTOM="/etc/grub.d/40_custom"
 ROOT_UUID=$(blkid $(mount | grep -w "on /") -s UUID -o value)
 
 echo "" >> $GRUB_CUSTOM
-echo "menuentry 'Destroy' --users morro --class os 'destroy' { " >> $GRUB_CUSTOM
+echo "menuentry '$entry_name' --users $user --class os 'destroy' { " >> $GRUB_CUSTOM
 echo "        load_video" >> $GRUB_CUSTOM
 echo "        set gfxpayload=keep" >> $GRUB_CUSTOM
 echo "        insmod gzio" >> $GRUB_CUSTOM
@@ -112,8 +157,8 @@ echo "}" >> $GRUB_CUSTOM
 
 # password protect the destroy menu entry
 echo ""
-echo "set superusers=\"morro\"" >> $GRUB_CUSTOM
-echo "password morro morrolinux.it" >> $GRUB_CUSTOM
+echo "set superusers=\"$user\"" >> $GRUB_CUSTOM
+echo "password $user $password" >> $GRUB_CUSTOM
 echo "export superusers" >> $GRUB_CUSTOM
 sed -i -r "s/(.*menuentry )('.*)/\1--unrestricted \2/g" /etc/grub.d/10_linux
 
