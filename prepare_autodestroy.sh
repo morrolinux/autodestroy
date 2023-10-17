@@ -4,9 +4,10 @@
 user=""
 password=""
 entry_name=""
+speed=0
 
 usage() {
-  echo "usage: $0 -u <user> -p <password> [-e <grub entry name>]"
+  echo "usage: $0 -u <user> -p <password> [-e <grub entry name>] [-s enable or disable erasing speed (write zero or urandom)]"
   exit 1
 }
 
@@ -23,6 +24,9 @@ handle_args(){
 		e)
 		entry_name="$OPTARG"
 		;;
+		s)
+		speed=1
+		;;		
 		\?)
 		echo "Unrecognized option: -$OPTARG"
 		usage
@@ -127,7 +131,12 @@ echo 'umount /root' >> $DESTROY_BIN
 echo 'sgdisk -Z $rootfs' >> $DESTROY_BIN
 echo 'wipefs -af $rootfs' >> $DESTROY_BIN
 echo 'echo Erasing drive... please wait...' >> $DESTROY_BIN
-echo 'dd if=/dev/zero of=/dev/$(lsblk -ndo pkname $rootfs) bs=4M status=progress' >> $DESTROY_BIN
+if [ $speed -eq 1 ]
+then
+	echo 'dd if=/dev/zero of=/dev/$(lsblk -ndo pkname $rootfs) bs=4M status=progress' >> $DESTROY_BIN
+else
+	echo 'dd if=/dev/urandom of=/dev/$(lsblk -ndo pkname $rootfs) bs=4M status=progress' >> $DESTROY_BIN
+fi
 echo 'reboot -f' >> $DESTROY_BIN
 chmod +x $DESTROY_BIN
 
