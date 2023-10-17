@@ -40,6 +40,10 @@ Please ensure that the script is compatible with your system before running it. 
 
 We're working on developing versions of this script for both Windows and macOS, so stay tuned for more updates.
 
+## Original Project
+
+This project is a fork of the [autodestroy script](https://github.com/morrolinux/autodestroy) by the original author. We aim to continue the development and improvements while adhering to the original project's purpose.
+
 ## Feedback and Contributions
 
 We welcome contributions and improvements to this script. If you encounter any issues, have suggestions, or want to contribute, feel free to open an issue or create a pull request on the GitHub repository.
