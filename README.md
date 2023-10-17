@@ -36,9 +36,6 @@ This script can be used in various scenarios, including but not limited to:
 
 Please ensure that the script is compatible with your system before running it. The script may need modification to work correctly on certain distributions and configurations.
 
-## Upcoming Versions
-
-We're working on developing versions of this script for both Windows and macOS, so stay tuned for more updates.
 
 ## Original Project
 
