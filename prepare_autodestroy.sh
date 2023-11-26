@@ -7,7 +7,7 @@ entry_name=""
 speed=0
 
 usage() {
-  echo "usage: $0 -u <user> -p <password> [-e <grub entry name>] [-s enable or disable erasing speed (write zero or urandom)]"
+  echo "Usage: $0 -u <Username> -p <Password> [-e <GRUB Entry Name>] [-s (Writes zeroes instead of urandoms)]"
   exit 1
 }
 
@@ -35,7 +35,7 @@ handle_args(){
 	done
 	if [ -z "$user" ] || [ -z "$password" ]
 	then
-		echo "You must specify the user, password."
+		echo "You must specify the user and password."
 		usage
 	fi
 	if [ -n "$entry_name" ]; then
@@ -76,9 +76,9 @@ rm -rf early*
 mv main/* .
 rmdir main
 
-echo "extraction complete."
+echo "Extraction complete."
 ls -l
-echo "PLEASE confirm everything is alright and press ENTER to continue, or CTRL-c to abort."
+echo "Please, confirm that everything is alright and press enter to continue, or CTRL-C to abort."
 read -n 1 -s
 
 
@@ -124,11 +124,11 @@ echo 'mount -t efivarfs efivarfs /sys/firmware/efi/efivars'  >> $DESTROY_BIN
 echo 'for entry in $(efibootmgr | grep Boot0 | grep -v EFI | cut -d* -f1 | cut -dt -f2); do efibootmgr -B -b $entry; done' >> $DESTROY_BIN
 echo 'efibootmgr -v' >> $DESTROY_BIN
 echo 'export rootfs=$(mount | grep -w "on /root"|cut -d" " -f1)' >> $DESTROY_BIN
-echo 'echo ROOTFS IS: $rootfs' >> $DESTROY_BIN
+echo 'echo RootFS: $rootfs' >> $DESTROY_BIN
 echo 'umount /root' >> $DESTROY_BIN
 echo 'sgdisk -Z $rootfs' >> $DESTROY_BIN
 echo 'wipefs -af $rootfs' >> $DESTROY_BIN
-echo 'echo Erasing drive... please wait...' >> $DESTROY_BIN
+echo 'echo Erasing drive... Please wait...' >> $DESTROY_BIN
 if [ $speed -eq 1 ]
 then
 	echo 'dd if=/dev/zero of=/dev/$(lsblk -ndo pkname $rootfs) bs=4M status=progress' >> $DESTROY_BIN
@@ -143,7 +143,7 @@ sed -i -r 's/(^# Mount cleanup$)/exec \/bin\/destroy.sh\n\1/' ./init
 # sed -i -r 's/(^# Mount cleanup$)/exec \/usr\/bin\/sh\n\1/' ./init
 
 # build the initramfs cpio archive
-echo "creating initramfs cpio archive..."
+echo "Creating the new initramfs cpio archive..."
 find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/destroy.cpio.gz
 
 # ADD A CUSTOM GRUB ENTRY
@@ -177,4 +177,4 @@ sed -i 's/GRUB_TIMEOUT=0/GRUB_TIMEOUT=5/g' /etc/default/grub
 # rebuild grub menu
 grub-mkconfig -o /boot/grub/grub.cfg
 
-echo "ALL IS DONE! - Now you can reboot.."
+echo "All done! Now you can reboot the system to apply changes."
