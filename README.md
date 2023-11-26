@@ -1,9 +1,15 @@
-# DANGER ZONE: FULL DISK WIPE
+# GRUB Disk Wipe
 
+## Demo
 <img src="pics/github-demo-autodestroy.gif" width="100%" height="100%"> 
 
-This simple bash script will program the "autodestroy button" on your PC. 
-Edit the script to add a custom username and password protection and make sure everything goes as it should.
+## Quick Explanation
+This simple bash script will add the "Destroy" button to your GRUB menu. 
+Edit the script to set a custom username and password to limit the access to this feature and to make sure that everything goes as it should.
 
+## Disclaimer
 **WARNING**: If anything in the script goes wrong, you could **unintenionaly destroy all your data** and make your system unbootable. \
 **No warranty** of any kind that this will work for you. Please check the script thoroughly before running it.
+
+## Contributors
+This script was originally made by morrolinux, but I (sk_Manux) modified it to suit my needs.
