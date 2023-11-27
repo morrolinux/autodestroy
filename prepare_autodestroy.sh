@@ -14,8 +14,6 @@ echo " | |_| | |_| |\ V  V /  "
 echo "  \____|____/  \_/\_/   "
 echo "                        "
 echo "     GRUB Disk Wipe     "
-echo "   Developed by Morro   "
-echo "  Custom Fork by Manux  "
 echo " "
 echo " "
 
