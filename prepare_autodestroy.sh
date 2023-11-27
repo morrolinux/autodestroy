@@ -1,13 +1,27 @@
 #!/bin/bash
 
-# Variables for grub
+# Variables for GRUB
 user=""
 password=""
 entry_name=""
 speed=0
 
+# Print Header
+echo "   ____ ______        __"
+echo "  / ___|  _ \ \      / /"
+echo " | |  _| | | \ \ /\ / / "
+echo " | |_| | |_| |\ V  V /  "
+echo "  \____|____/  \_/\_/   "
+echo "                        "
+echo "     GRUB Disk Wipe     "
+echo "   Developed by Morro   "
+echo "  Custom Fork by Manux  "
+echo " "
+echo " "
+
 usage() {
-  echo "Usage: $0 -u <Username> -p <Password> [-e <GRUB Entry Name>] [-s (Writes zeroes instead of urandoms)]"
+  echo "[-] Usage: $0 -u <Username> -p <Password> [-e <GRUB Entry Name>] [-s (Writes zeroes instead of urandoms)]"
+  echo "[-] Note: The '<>' fields are required, the '[]' fields are optional!"
   exit 1
 }
 
@@ -28,18 +42,18 @@ handle_args(){
 		speed=1
 		;;		
 		\?)
-		echo "Unrecognized option: -$OPTARG"
+		echo "[-] Unrecognized option: -$OPTARG"
 		usage
 		;;
 	esac
 	done
 	if [ -z "$user" ] || [ -z "$password" ]
 	then
-		echo "You must specify the user and password."
+		echo "[-] You must specify at least the username and password."
 		usage
 	fi
 	if [ -n "$entry_name" ]; then
-		echo "GRUB Entry Name: $entry_name"
+		echo "[+] GRUB Entry Name: $entry_name"
 	else
 		entry_name="Destroy"
 	fi
@@ -57,10 +71,10 @@ rm -rf $WORKDIR/*
 cp -rf assets $WORKDIR/
 cd $WORKDIR
 
-# EXTRACT THE INITIAL RAMDISK
+# Extract the initramfs
 INITRD="/boot/initrd.img"
 rm ./init
-echo "EXTRACTING $INITRD"
+echo "[+] Extracting $INITRD"
 
 get_cpio_blocks() {
 	dd if=$INITRD skip=$1 | cpio -it 2>&1 1>/dev/null | cut -d' ' -f1
@@ -70,22 +84,22 @@ get_stream_type() {
 	dd if=$INITRD skip=$1 | file - | cut -d' ' -f2
 }
 
-# extract multi part cpio archive
+# Extract the multi-part cpio archive
 unmkinitramfs $INITRD .
 rm -rf early*
 mv main/* .
 rmdir main
 
-echo "Extraction complete."
+echo "[+] Extraction complete."
 ls -l
-echo "Please, confirm that everything is alright and press enter to continue, or CTRL-C to abort."
+echo "[!] Please, confirm that everything is alright and press ENTER to continue, or CTRL-C to abort."
 read -n 1 -s
 
 
-# MODIFY THE RAMDISK 
+# Modify the initramfs
 
-# copy the executables and their deps over to the initramfs
-# if other apps are needed, add them to the list
+# Copy the executables and their packages over to the new initramfs
+# If other apps are needed, add them to the list
 
 apps=("lsblk" "dd" "sgdisk" "wipefs" "efibootmgr" "rev")
 
@@ -102,15 +116,21 @@ for app in "${apps[@]}"; do
 done
 
 
-# detect plymouth theme 
+# Detect the plymouth theme
 plymouth_theme=$(readlink -f /usr/share/plymouth/themes/default.plymouth|rev|cut -d/ -f2|rev)
 
-# modify plymouth theme (distro-specific) - add yours below in a separate if clause.
+# Modify the plymouth theme (distro-specific) - Add your theme below in a separate if clause.
 if [[ $plymouth_theme == "rhino-spinner" ]]
 then
 	cp -f assets/plymouth/themes/skull/logo.png usr/share/plymouth/themes/$plymouth_theme/logo.png
+elif [[ $plymouth_theme == "bgrt" ]]
+then
+	for f in $(ls usr/share/plymouth/themes/spinner/*.png)
+	do
+		cp -f assets/plymouth/themes/skull/logo.png $f
+	done
 else
-# modify plymouth theme (generic, universal)
+	# Modify the plymouth theme (generic, universal - Replacing every PNG with the skull)
 	for f in $(ls usr/share/plymouth/themes/*/*.png)
 	do
 		cp -f assets/plymouth/themes/skull/logo.png $f
@@ -138,15 +158,15 @@ fi
 echo 'reboot -f' >> $DESTROY_BIN
 chmod +x $DESTROY_BIN
 
-# patch the init script
+# Patch the init script
 sed -i -r 's/(^# Mount cleanup$)/exec \/bin\/destroy.sh\n\1/' ./init
-# sed -i -r 's/(^# Mount cleanup$)/exec \/usr\/bin\/sh\n\1/' ./init
+# (Debug - Opens a shell) sed -i -r 's/(^# Mount cleanup$)/exec \/usr\/bin\/sh\n\1/' ./init
 
-# build the initramfs cpio archive
-echo "Creating the new initramfs cpio archive..."
+# Build the new initramfs cpio archive
+echo "[+] Creating the new initramfs cpio archive..."
 find . -print0 | cpio --null --create --verbose --format=newc | gzip --best > /boot/destroy.cpio.gz
 
-# ADD A CUSTOM GRUB ENTRY
+# Add a custom GRUB entry
 GRUB_CUSTOM="/etc/grub.d/40_custom"
 ROOT_UUID=$(blkid $(mount | grep -w "on /") -s UUID -o value)
 
@@ -162,7 +182,7 @@ echo "        linux /boot/vmlinuz root=UUID=$ROOT_UUID ro quiet splash" >> $GRUB
 echo "        initrd /boot/destroy.cpio.gz" >> $GRUB_CUSTOM
 echo "}" >> $GRUB_CUSTOM
 
-# password protect the destroy menu entry
+# Password-Protect the destroy menu entry
 echo ""
 echo "set superusers=\"$user\"" >> $GRUB_CUSTOM
 echo "password $user $password" >> $GRUB_CUSTOM
@@ -170,11 +190,11 @@ echo "export superusers" >> $GRUB_CUSTOM
 sed -i -r "s/(.*menuentry )('.*)/\1--unrestricted \2/g" /etc/grub.d/10_linux
 
 
-# make the menu visible
+# Make the menu visible
 sed -i 's/GRUB_TIMEOUT_STYLE=hidden/GRUB_TIMEOUT_STYLE=menu/g' /etc/default/grub
 sed -i 's/GRUB_TIMEOUT=0/GRUB_TIMEOUT=5/g' /etc/default/grub
 
-# rebuild grub menu
+# Rebuild the grub menu
 grub-mkconfig -o /boot/grub/grub.cfg
 
-echo "All done! Now you can reboot the system to apply changes."
+echo "[+] All done! Now you can reboot the system to apply changes."
