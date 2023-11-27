@@ -1,4 +1,5 @@
 # GRUB Disk Wipe
+# DANGER: Full Disk Wipe
 
 ## Demo
 <img src="pics/github-demo-autodestroy.gif" width="100%" height="100%"> 
