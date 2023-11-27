@@ -11,6 +11,3 @@ Edit the script to set a custom username and password to limit the access to thi
 ## Disclaimer
 **WARNING**: If anything in the script goes wrong, you could **unintenionaly destroy all your data** and make your system unbootable. \
 **No warranty** of any kind that this will work for you. Please check the script thoroughly before running it.
-
-## Contributors
-This script was originally made by morrolinux, but I (sk_Manux) modified it to suit my needs.
